@@ -13,11 +13,8 @@ Language : C++
 Bibliothèque graphique : [GRAPIC](https://perso.liris.cnrs.fr/alexandre.meyer/grapic/html/)      
 Année : 2019/2020 --  **L1 Informatique**
 
-## Table des matières
-1. [Arborecence du projet](#1---arborecence-du-projet)
-2. [Lancement de l'application](#2---lancement-de-lapplication)
 
-## 1-- Arborecence du projet
+## 1-- Arborescence du projet
 
 - **grapic.png**         : Image de présentation du projet
 - **particules.cpp**      : Application principale

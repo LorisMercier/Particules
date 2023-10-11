@@ -1,0 +1,211 @@
+MERCIER LORIS p1906860
+
+Le projet :
+Aimant la physique mécanique, mon projet de LIFAMI a pour but de reproduire le plus fidèlement possible les réactions entre des balles
+et d'autres éléments (parois, autres balles, eau). J'ai donc essayé à mon petit niveau, de reproduire un petit moteur graphique traitant
+toutes ces collisions.
+
+______________________________________________________________________
+1) UTILISATION DU PROGRAMME :
+Le programme se décompose en 2 modes : BALLE et LIGNE. Il suffit d'appuyer sur TAB pour passer de l'un à l'autre.
+Le mode BALLE permet de :
+- Créer une nouvelle balle* via la souris (Appui sur le clique gauche, tracer le vecteur vitesse, relacher pour lancer votre balle)     
+- Supprimer une balle en maintenant le clique droit sur les balles que vous souhaitez enlever
+*Le rayon est modifiable via les flèches directionnelles HAUT/BAS ou les touches Z/S
+
+Le mode LIGNE permet de :
+- Créer une nouvelle ligne (Appui sur le clique gauche, tracer la ligne, relacher pour confirmer votre ligne)
+- Supprimer une ligne (Tracer une ligne avec le clique droit puis relacher. Toutes les lignes sécantes seront supprimées)
+
+La touche ENTREE permet d'afficher le vecteur vitesse et de force + la masse de la balle. C'est ce que j'appelle l'affichage des paramètres.
+Le cadre en haut à droite permet de suivre le nombre de balles et de lignes en jeu.
+
+______________________________________________________________________
+2) FONCTIONNEMENT DU PROGRAMME :
+La structure du programme se décompose en trois grandes parties : L'initialisation, l'actualisation, et l'affichage.
+
+--------------------------- Initialisation (init) :
+C'est ici que tout se met en place. La structure world englobant toutes les informations du jeu est initialisée avec le nombre de 
+balles et de lignes souhaité grâce à des sous-fonctions d'initalisation (une par type de structure).
+Les booléens sont initialisés par défaut (c'est à dire mode BALLE activé, et l'affichage des paramètres désactivé)
+Enfin les 2 structures gérant la création de balles et lignes sont également initialisées avec des valeurs par défaut
+
+
+--------------------------- Actualisation (update) :
+C'est le coeur du programme. On s'occupe d'abord des actions de l'utilisateur puis on traite le reste.
+
+Dans un premier temps, on gère les appuis sur les touches du clavier et les actions qui en découlent. Par exemple, c'est ici
+que l'on bascule du mode BALLE au mode LIGNE si l'on appui sur TAB.
+
+On regarde ensuite quel mode est selectionné et l'on traite en conséquence :
+- Si l'on est dans le cas du mode BALLE, on gère la suppression de balles via le clique droit et la création ou l'ajout* 
+(s'il y a) d'une nouvelle balle. Cela comprend des fonctions de collisions pour s'assurer que la nouvelle balle ne se créer pas
+dans une autre.
+- Le même principe est appliqué au mode LIGNE (exept que les collisions sont traitées avec l'eau et non les autres balles)
+* Un "ajout" se caractérise par un "etat" = 2 (voir fonction d'affichage)
+
+Une fois les actions utilisateurs prises en charge, on actualise les forces avec "partAddforce" qui ajoute la gravité et qui fait
+appel à la fonction "reaction_eau" gérant la poussée d'archimede. Toutes ces fonctions sont bien sûr détaillées en commentaire
+dans le code. On actualise ensuite la vitesse grâce aux forces et la position grâce à la vitesse. On en profite pour répondre 
+au cas d'une collision murale ("collision_murs")
+
+La dernière partie de l'actualisation s'occupe des collisions plus complexes, necessitant plusieurs fonctions imbriquées.
+Pour chaque balle, on test s'il y a collision avec une ligne et/ou avec une autre balle. Si c'est le cas, on repositionne la balle
+avec la fonction "evite_chevauchement" puis on gère le rebond et la vitesse ("nouvelle_vitesse") pour changer la direction de 
+la balle. Pour cela, on se sert de la physique avec les lois de Newton et les "chocs élastiques".
+
+
+--------------------------- Affichage(draw) :
+Cette fonction est responsable de tout l'affichage et le visuel de l'écran.
+
+On affiche d'abord toutes les balles et les parois via des boucles FOR.
+Viens ensuite l'affichage "fixe" c'est à dire l'eau, et le cadre du coin supérieur droit avec les informations sur le nombre
+d'éléments en jeu.
+
+La fonction distingue ensuite le mode BALLE et LIGNE.
+Dans le premier cas, on affiche l'aide utlisateur en haut à gauche puis, si le nombre balle n'est pas à son maximum, on gère
+la création d'un nouvel élément, sinon on affiche un message indiquant que l'on a atteint le nombre maximum de balles.
+L'étape de création n'est pas uniquement de l'affichage, c'est aussi là que l'on met à jour le booléen permettant se savoir où
+nous en sommes dans la création (Rien, en cours, terminé). De plus, on gère le clique gauche (actualisation des coordonnées de la ligne
+en cours) permettant de tracer le vecteur vitesse.
+
+Pour le mode LIGNE, on affiche aussi une aide utilisateur en haut à gauche.
+Ensuite on affiche la création en cours (même en cas de maximum atteint car pour supprimer, il faut aussi tracer une ligne)
+Si le maximum de lignes n'est pas atteint, on gère le clique gauche (actualisation des coordonnées de la ligne en cours).
+Sinon, on affiche un message indiquant que l'on a atteint le nombre maximum de lignes
+On traite ensuite le clique droit (même principe que pour le gauche).
+Enfin, dans le cas où il n'y a aucun clique et que nous étions avant "en cours de création", on change l'état de la nouvelle
+structure à 2, c'est à dire "Terminé", qui permettra de créer le nouvel élément dans la fonction "Update".
+
+
+
+______________________________________________________________________
+3) HISTORIQUE : Du plus récent au plus ancien
+
+----------------------------  Dépot final : ---------------------------------
+Nouveauté :
+
+- Ajout d'un bassin d'eau
+--> Création de la fonction init_bassin pour initiliser la parois du bassin + modification de "Draw" pour afficher l'eau
+--> Procédure "reaction_eau" qui :
+	--> Test si la balle est en contact avec l'eau
+	--> Met à jour la force de balle avec la poussée d'Archimède (utilisation des formules de volumes d'une sphère)
+	--> Prise en compte aussi de la loi de stockes (force de frottement d'un fluide sur une sphère)
+
+- Modification du paramètre "masse" d'une balle
+--> La masse est désormais proportionnelle au volume et non plus au rayon. (avec un facteur de division pour des masses réaliste)
+--> Cela rééquilibre les forces (En effet, la poussée d'archimède fait mieux flotter les gros volumes que les petits, donc
+il est important que les "gros" volumes est un "gros" poid pour ne pas qu'ils flottent trop)
+--> Cela entraine aussi que les rebonds entre grosses balles et petites sont plus réaliste visuellement.
+--> La masse influe sur le vecteur vitesse ce qui n'était pas le cas avant. Une balle "lourde" chute désormais plus vite qu'une "légère"
+
+- Concernant les balles
+--> Prise en charge du clique droit pour supprimer une balle
+--> Fonction "supprimer" permettant d'enlever une balle dans la grande structure "World"
+
+- Mise en place d'un mode LIGNE permettant d'effectuer des actions sur ces-dernières. Appuyer sur TAB pour changer de mode
+
+- Concernant les lignes (en mode LIGNE)
+--> Possibilité de créer des lignes via le clique gauche
+	--> Vérification de collision avec le bassin d'eau
+	--> Fonction "addLigne" marchant que si la ligne n'est pas un point
+--> Possibilité de supprimer des lignes via le clique droit
+	--> Mise en place d'un booléen "mouse" pour distinguer le cas d'une ligne via clique gauche ou clique droit
+	--> Fonction "secante" pour connaitre les lignes à supprimer
+	--> Ajout d'un paramètre m et p dans la structure ligne pour réaliser les calculs de la fonction "secante"
+	--> Utilisation de la fonction "supprimer" déjà existante avec les balles pour supprimer une ligne de la structure "World"
+--> Code spécifique pour distinguer les lignes verticales (dans ce cas p=-1)
+--> Création de la fonction "appartient_seg" cherchant si un point appartient à un segment (utile pour la fonction "secante")
+
+- Correctifs mineurs
+--> Affichage de textes explicatifs pour l'utilisateur et en réponse à ses actions
+--> Affichage du nombre de balles et lignes en haut à droite.
+
+
+- Amélioration des collisions :
+--> A l'initialisation, une balle ne peut plus se créer dans une autre
+--> Idem pour la création via la souris. L'ajout d'une nouvelle balle est bloqué en cas de collision.
+--> A l'initialisation, une ligne ne peut plus se créer si elle touche l'eau
+--> Idem pour la création via la souris
+--> Il n'y a plus de friction lors d'une collision avec une ligne, cela permet au balle de pouvoir "rouler" dessus.
+(on compense ici la force rotation qui n'est pas programmé)
+
+-----------------------------  3ème dépot : ---------------------------------
+
+NOUVEAUTE DE LA SEMAINE :
+Amélioration des lignes
+--> Leur direction n'est plus horizontale ou verticale mais aléatoire (et donc oblique)
+ --> Ajout de la structure Couleur et de sa fonction make_couleur
+--> La couleur des lignes est aléatoire et est stockée directement dans la structure
+
+-------------------------------------------------
+Nouvelle fonction de collision contre les parois (mélangeant la fonction de collision avec les murs et celle entre les particules)
+--> Les "bords" sont désormais correctement pris en compte dans les rebonds
+--> Ce nouveau code pour les bords marchant aussi pour tous les autres points de la ligne,
+il remplace la fonction de la semaine dernière qui ne marchait pas très bien...
+--> Mise en place de la fonction "evite_chevauchement2" (déja existante mais pas utilisée dans ce cas)
+qui limite également les bugs de la semaine passée
+--> La nouvelle fonction de rebond fonctionne pour les lignes obliques
+
+-------------------------------------------------
+Ajout de la possibilité de créer une particule à la souris (Il suffit maintenir le clique gauche et de tracer le vecteur vitesse)
+--> Création de la structure Nouvelle_particule qui est stockée dans World
+--> Modification de la fonction Draw pour afficher à l'écran la création de la nouvelle particule et du vecteur vitesse
+--> Modification de la fonction Update pour pouvoir faire varier le rayon de la particule à l'aide des flèches du clavier ou des touches S/Z
+--> Création de la fonction addParticule qui initialise la nouvelle paricule une fois le clique de la souris terminé
+
+-------------------------------------------------
+Correctifs mineurs
+--> Ajout d'un message d'alerte quand le nombre de particules maximum est atteint (cela bloque aussi la création de nouvelles particules)
+--> Modification de certains noms de variable qui était "faux" ou peu implicite
+--> Couleur des particules légérement modifiée
+
+
+PROBLEMES A RESOUDRE POUR LE PROCHAIN TP :
+Lors de l'initialisation, les particules peuvent se créer directement dans une ligne ou dans une autre particule
+Cela génère quelques bugs visuels
+Idem lors de la création via la souris
+
+CE QUE J'AIMERAIS POUR LA SUITE
+- Résoudre le bug ci-dessus
+- Ajout d'un bassin d'eau. Cela modifiera les forces...
+
+-----------------------------  2ème dépot : ---------------------------------
+NOUVEAUTE DE LA SEMAINE :
+
+- Amélioration des collisions entre balles :
+	--> Prise en compte de masses différentes
+	--> Prise en compte de rayons différents
+
+- Modification du calcul de la force de gravité qui n'était pas réaliste.
+- Ajout de ligne obstacle (Structure Ligne + Initialisation)
+- (1) Fonction testant la collision entre les balles et les lignes (à perfectionner)
+- (2) Fonction de mise à jour après collision avec une ligne (à perfectionner)
+- Debogage + ajustements mineurs du code
+
+
+PROBLEMES A RESOUDRE POUR LE PROCHAIN TP :
+La fonction (2) ne prend pas en compte les "bords" des lignes. Il y a donc de nombreux bugs visuels...
+Mais je n'ai pas encore trouvé comment résoudre ce problème... à réfléchir...
+
+CE QUE J'AIMERAIS POUR LA SUITE :
+- Résoudre les bugs ci-dessus
+- Ajouter une balle en cliquant avec la souris et en dessinant son vecteur vitesse initiale
+- Ajout d'un bassin d'eau. Cela modifiera les forces...
+
+------------------------------  1er dépot : ---------------------------------
+
+Ce que j'ai réalisé cette semaine :
+- Fin du TP sur les particules pour partir sur de bonnes bases
+- Beaucoup de recherche documentaire pour comprendre comment faire rebondir physiquement des balles entres-elles
+- Création de la fonction "collision" pour savoir si deux balles se touchent
+- Création de la fonction "Distance_2pts" qui sert pour la fonction de "collision"
+- Création de la fonction "evite_chevauchement" pour repositionner les balles en cas de collisions
+- Création de la fonction "nouvelle_vitesse" pour faire rebondir les balles (Chocs élastiques + Loi de Newton)
+(perte de temps ici, car j'envisageais de base à gérer les rebonds grâce à la trigonométrie mais je n'ai pas réussi)
+- Réajustement de la fonction Update pour prendre en compte ces deux nouvelles fonctions.
+
+Ce que j'aimerais pour la suite :
+- Avoir des balles de différentes tailles/masses
+- Pouvoir ajouter des "murs" sur l'écran
+- Ajouter une balle via la souris
